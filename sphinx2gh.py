@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #  -*- coding: utf-8 -*-
-"""A python module to automation building and deployment of Sphinx documentation on GitHub static pages"""
+"""A python command line tool to automate building and deployment of Sphinx documentation on GitHub static pages"""
 
 from subprocess import call
 import os
@@ -92,10 +92,10 @@ def main():
     
     # Build temp folder to clone the repo
     working_dir = mkdtemp(suffix='_doc')
-    os.chdir(working_dir)
     
     print "\t--> Cloning the repository in %s" % working_dir
-    repo = Repo.clone_from(args.repo, '.')
+    repo = Repo.clone_from(args.repo, working_dir)
+    os.chdir(working_dir)
     
     # TODO: check here if the gh-pages branch does exist
     
@@ -117,16 +117,17 @@ def main():
             assert is_github_repo(args.remote_gh)
         except AssertionError:
             raise AssertionError('%s is not a gitHub repository' % args.remote_gh)
-        remote = args.remote_gh
+        remote_gh = args.remote_gh
 
     else:
         if is_github_repo(args.repo):
-            remote = args.repo
+            remote_gh = args.repo
         else:
             raise Exception('As the source repo is not a GitHub repo, you have to provide a remote GitHub with '
                             'the --remote-gh option')
-
-    print "\n\t* Documentation will be pushed on the GitHub repo with url %s" % remote
+    repo.git.remote('add', 'github', remote_gh)
+    print "\n\t* Documentation will be pushed on the GitHub repo with url %s" % remote_gh
+    
     
     # Setting the documentation folder
     doc_folder_guess = ['docs', 'doc', 'documentation']
@@ -159,6 +160,8 @@ def main():
     build_sha = repo.git.log(n='1', pretty="format:%H")
     print "\n\t--> Checking out to build branch %s" % build_branch
     checkout_branch(repo, build_branch)
+    # repo.git.pull(args.repo, build_branch)
+    
     
     # Building the documentation
     print "\n\t--> Building the sphinx HTML documentation"
@@ -177,12 +180,13 @@ def main():
     print "\n\t--> Cleaning the working copy"
     call(['make', 'clean'])
     os.chdir('..')
-    print os.getcwd()
     
     print "\n\t--> Checking out to branch gh-pages"
+    
+    # repo.git.pull(args.repo, 'gh-pages')
     checkout_branch(repo, 'gh-pages')
+    
     call(['ls'])
-
     # TODO: trouver ici le moyen de tout effecer sauf les .git, .idea etc...
     # last_sha = repo.git.log(n='1', pretty="format:%H")
     # print "\n\t--> Removing last commited HTML files of revision %s" % last_sha
@@ -195,9 +199,6 @@ def main():
     #         pass
     call(['rm', '-rf'])
     
-    
-    
-    print os.getcwd()
     
     
     
@@ -217,8 +218,8 @@ def main():
     
     
     sys.exit(0)
-    print "\n\t--> Pushing new revision to %s" % remote
-    repo.git.push(remote, 'gh-pages')
+    print "\n\t--> Pushing new revision to %s" % remote_gh
+    repo.git.push('github', 'gh-pages')
 
     print "\n\t--> Cleaning temp folders"
     os.chdir('..')
