@@ -1,0 +1,26 @@
+{% set data = load_setuptools()%}
+package:
+  name: sphinx2gh
+  version: {{data.get('version')}}
+
+source:
+  path: ../
+
+requirements:
+  build:
+    - python
+    - setuptools
+  run:
+    - python
+    - gitpython
+    - argcomplete
+
+build:
+  entry_points:
+    - sphinx2gh = sphinx2gh:main
+
+about:
+  home: {{data.get('url')}}
+  license: {{data.get('license')}}
+  license_file: LICENCE
+  summary: {{data.get('description')}}
