@@ -5,6 +5,7 @@
 from subprocess import call
 import os
 from distutils.dir_util import copy_tree, remove_tree
+import shutil
 from tempfile import mkdtemp
 from datetime import datetime
 import argparse
@@ -154,7 +155,7 @@ def main():
         assert is_doc_folder(doc_src)
     except AssertionError:
         raise AssertionError('%s is not a valid sphinx documentation folder' % doc_src)
-    print "\n\t* The documentation foder is %s" % doc_src
+    print "\n\t* The documentation folder is %s" % doc_src
     
     # Checking out the build branch
     build_sha = repo.git.log(n='1', pretty="format:%H")
@@ -186,25 +187,22 @@ def main():
     # repo.git.pull(args.repo, 'gh-pages')
     checkout_branch(repo, 'gh-pages')
     
-    call(['ls'])
-    # TODO: trouver ici le moyen de tout effecer sauf les .git, .idea etc...
-    # last_sha = repo.git.log(n='1', pretty="format:%H")
-    # print "\n\t--> Removing last commited HTML files of revision %s" % last_sha
-    # commited_files = repo.git.diff_tree(no_commit_id=True, name_only=True, r=last_sha).split('\n')
-    # for commited_file in commited_files:
-    #     try:
-    #         print 'Deleting file %s' % commited_file
-    #         os.remove(commited_file)
-    #     except OSError:
-    #         pass
-    call(['rm', '-rf'])
-    
-    
-    
+    print "removing everything except .git and .gitignore"
+    filelist = [f for f in os.listdir('.') if not f.startswith('.git')]
+    for f in filelist:
+        if os.path.isfile(f):
+            os.remove(f)
+        if os.path.isdir(f):
+            shutil.rmtree(f)
     
     print "\n\t--> Copying back HTML files from %s to %s" % (html_dir, working_dir)
     copy_tree(html_dir, working_dir)
     
+    # If we have no .nojekyll file, we create it
+    if not os.path.isfile('.nojekyll'):
+        print "Adding a .nojekyll file"
+        with open('.nojekyll', 'w'):
+            os.utime('.nojekyll', None)
     
     print "\n\t--> Commiting new documentation"
     if args.commit_msg is None:
@@ -212,12 +210,9 @@ def main():
     else:
         msg = args.commit_msg
     
-    sys.exit(0)
     repo.git.add('.', all=True)
     print repo.git.commit(m=msg)
     
-    
-    sys.exit(0)
     print "\n\t--> Pushing new revision to %s" % remote_gh
     repo.git.push('github', 'gh-pages')
 
