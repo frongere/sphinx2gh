@@ -25,7 +25,8 @@ setup(
     long_description=LONG_DESCRIPTION,
     license='BSD',
     keywords='Documentation, Sphinx, Git, GitHub',
-    packages=find_packages(exclude=['contrib', 'doc', 'tests*']),
+    # packages=find_packages(exclude=['contrib', 'doc', 'tests*']),
+    py_modules=['sphinx2gh'],
     install_requires=['gitpython', 'argcomplete'],
     entry_points={
         'console_scripts': [
