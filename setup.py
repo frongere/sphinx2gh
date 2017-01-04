@@ -18,16 +18,15 @@ LONG_DESCRIPTION = read('README.rst')
 setup(
     name='sphinx2gh',
     version='0.1',
-    url='https://',  # TODO : A completer
+    url='https://github.com/frongere/sphinx2gh',
     author='Francois Rongere',
     author_email='franrongere@gmail.com',
     description="""A python command line tool to automate building and deployment of Sphinx documentation on GitHub""",
     long_description=LONG_DESCRIPTION,
     license='BSD',
     keywords='Documentation, Sphinx, Git, GitHub',
-    packages=find_packages(exclude=['contrib', 'doc', 'tests*']),
-    # setup_requires=['pytest-runner'],
-    # tests_require=['pytest', 'pytest-cov'],
+    # packages=find_packages(exclude=['contrib', 'doc', 'tests*']),
+    py_modules=['sphinx2gh'],
     install_requires=['gitpython', 'argcomplete'],
     entry_points={
         'console_scripts': [

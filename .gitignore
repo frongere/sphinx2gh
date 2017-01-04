@@ -1,3 +1,4 @@
 .idea
 sphinx2gh.egg-info/
 *.pyc
+outputdir
